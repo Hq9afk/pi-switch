@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Remote PC Switch</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Remote PC Switch</h1>
+    <div class="btn-wrap">
+        <svg class="ring-svg" viewBox="0 0 180 180">
+            <circle class="ring-bg" cx="90" cy="90" r="80" />
+            <circle class="ring-progress" cx="90" cy="90" r="80" id="ring" />
+        </svg>
+        <button class="power-btn off" id="btn">OFF</button>
+    </div>
+    <div class="status" id="status"></div>
+    <div class="hint">hold 5s to force shutdown</div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
