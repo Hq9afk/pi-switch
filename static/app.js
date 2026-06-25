@@ -68,12 +68,31 @@ function onDown(e) {
     }, HOLD_MS);
 }
 
+function pollUntilState(expected, attempts = 0) {
+    if (attempts >= 20) { busy = false; return; }
+    setTimeout(() => {
+        fetch('/state')
+            .then(r => r.json())
+            .then(d => {
+                if (d.on === expected) {
+                    applyState(d.on);
+                    setStatus(d.on ? 'powered on' : 'powered off', 2500);
+                    busy = false;
+                } else {
+                    pollUntilState(expected, attempts + 1);
+                }
+            })
+            .catch(() => pollUntilState(expected, attempts + 1));
+    }, 500);
+}
+
 function onUp(e) {
     e.preventDefault();
     clearTimeout(holdTimer);
     resetRing();
     if (forceFired || busy) return;
 
+    const wasOn = btn.classList.contains('on');
     setStatus('...');
     busy = true;
     btn.className = 'power-btn busy';
@@ -81,12 +100,12 @@ function onUp(e) {
 
     fetch('/toggle', { method: 'POST' })
         .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-        .then(d => { applyState(d.on); setStatus(d.on ? 'powered on' : 'powered off', 2500); })
+        .then(() => { setStatus('transitioning...'); pollUntilState(!wasOn); })
         .catch(() => {
             setStatus('error — check connection', 3000);
             fetch('/state').then(r => r.json()).then(d => applyState(d.on)).catch(() => {});
-        })
-        .finally(() => { busy = false; });
+            busy = false;
+        });
 }
 
 function onLeave(e) {
